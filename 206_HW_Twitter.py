@@ -2,6 +2,8 @@ import unittest
 import tweepy
 import requests
 import json
+from twitter_info import *
+
 
 ## SI 206 - HW
 #Mia Bonanno
@@ -14,6 +16,7 @@ import json
 ## user's choice (should use the Python input function), and prints out the Tweet text and the
 ## created_at value (note that this will be in GMT time) of the first FIVE tweets with at least
 ## 1 blank line in between each of them, e.g.
+
 
 
 ## You should cache all of the data from this exercise in a file, and submit the cache file
@@ -47,10 +50,9 @@ import json
 ## Get your secret values to authenticate to Twitter. You may replace each of these
 ## with variables rather than filling in the empty strings if you choose to do the secure way
 ## for EC points
-consumer_key = "ZGt0gNlmdyQLKyVjDnbLpvDn6"
-consumer_secret = "0BCBLEqGNT8qQssEa4OOo35f0v6FXbSvKZ04Sd5paXcheErOF6"
-access_token = "920743703022657536-uIHpigUzMXJgsGB0b4qyvWUOXg8mQma"
-access_token_secret = "DWtMlouXO401mzH3XW59kQEYdWOEUBpCTnqNeAXQPFigr"
+
+
+
 ## Set up your authentication to Twitter
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
@@ -64,12 +66,33 @@ api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
 #### Recommended order of tasks: ####
 ## 1. Set up the caching pattern start -- the dictionary and the try/except
 ## 		statement shown in class.
-
+CACHE_FNAME= "twitter_cached.json"
+try:
+    cache_file = open(CACHE_FNAME, 'r')
+    cache_data= cache_file.read()
+    CACHE_D = json.loads(cache_data)
+except:
+    CACHE_D = {}
 
 
 ## 2. Write a function to get twitter data that works with the caching pattern,
 ## 		so it either gets new data or caches data, depending upon what the input
 ##		to search for is.
+input_phrase= input("Enter Tweet term: ")
+def get_tweets(input_phrase):
+
+    if input_phrase in CACHE_D:
+        twitter_data= CACHE_D[input_phrase] #gets data from the cache
+    else:
+        twitter_data= api.search(input_phrase)
+        CACHE_D[input_phrase]=twitter_data
+        f = open(CACHE_FNAME, 'w')
+        f.write(json.dumps(CACHE_D))
+        f.close()
+
+    updated_data = twitter_data['statuses']
+    return updated_data
+
 
 
 
@@ -77,6 +100,32 @@ api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
 ##		data you got back!
 
 
+#for tweets in get_tweets(input_phrase)[0:5]:
+
+#    print (tweets)
+
+
+
+
 ## 4. With what you learn from the data -- e.g. how exactly to find the
 ##		text of each tweet in the big nested structure -- write code to print out
 ## 		content from 5 tweets, as shown in the linked example.
+with open("twitter_cached.json") as json_data:
+    d=json.load(json_data)
+    if input_phrase in d:
+        print ('using cache')
+
+        for tweet in d[input_phrase]['statuses'][0:5]:
+
+            print ("TEXT: " + tweet['text'])
+            print ("CREATED AT: " + tweet['created_at'] + '\n')
+
+    else:
+        print ('fetching')
+        get_tweets(input_phrase)
+        with open("twitter_cached.json") as json_data:
+            d=json.load(json_data)
+            for tweet in d[input_phrase]['statuses'][0:5]:
+
+                print ("TEXT: " + tweet['text'])
+                print ("CREATED AT: " + tweet['created_at'] + '\n')
