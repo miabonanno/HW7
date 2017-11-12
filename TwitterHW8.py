@@ -33,8 +33,8 @@ except:
 # Your function must cache data it retrieves and rely on a cache file!
 
 
-def get_tweets():
-        if 'umsi' in CACHE_DICTION:
+def get_user():
+        if '@umich' in CACHE_DICTION:
             print('using cached data')
             twitter_data= CACHE_DICTION['umsi'] #gets data from the cache
         else:
